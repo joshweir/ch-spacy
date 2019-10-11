@@ -49,6 +49,10 @@ WORKDIR /
 
 COPY ./requirements.txt /
 RUN pip install -r requirements.txt
+
+# ENV NLP_ARCHITECT_BE=CPU
+# RUN pip install nlp-architect
+
 # RUN python -m spacy download en_core_web_sm
 # ENV NEURALCOREF_CACHE=/neuralcoref-cache
 # RUN mkdir /neuralcoref-cache
@@ -64,4 +68,5 @@ CMD gunicorn --bind 0.0.0.0:80 \
   --worker-tmp-dir /dev/shm \
   --workers=2 --threads=4 --worker-class=gthread \
   --log-file=- \
+  --preload \
   wsgi:app

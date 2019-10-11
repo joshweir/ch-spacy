@@ -7,3 +7,4 @@ flask
 futures
 flask-swaggerui
 gunicorn
+nlpre

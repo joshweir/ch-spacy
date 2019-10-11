@@ -1,24 +1,53 @@
 #!/usr/bin/python3
 import datetime
 import json
-import neuralcoref
-import spacy
 import logging
 logging.basicConfig(level=logging.INFO)
+import neuralcoref
+import spacy
+# from nlp_architect.models.bist_parser import BISTModel
+from nlpre import titlecaps, dedash, identify_parenthetical_phrases
+from nlpre import replace_acronyms, replace_from_dictionary
+from nlpre import separated_parenthesis, unidecoder, token_replacement
+from nlpre import url_replacement, separate_reference
+
+
+class TextClean(object):
+
+  def call(self, data):
+    ABBR = identify_parenthetical_phrases()(data)
+    parsers = [
+        dedash(),
+        # titlecaps(),
+        separate_reference(),
+        unidecoder(),
+        token_replacement(),
+        url_replacement(),
+        replace_acronyms(ABBR, underscore=False),
+        separated_parenthesis(),
+        # replace_from_dictionary(prefix="MeSH_")
+    ]
+
+    cleansed = data
+    for f in parsers:
+      cleansed = f(cleansed)
+
+    return cleansed.replace('\n', ' ')
 
 
 class ChProcess(object):
 
   def __init__(self, model_name):
     self.nlp = spacy.load(model_name)
-    # disabled = self.nlp.disable_pipes("tagger")
-    # self.nlp.add_pipe(self.nlp.create_pipe('sentencizer'))
     neuralcoref.add_to_pipe(self.nlp)
 
   def to_json(self, data, args):
     collapse_punctuation = False
     collapse_phrases = False
     output = []
+
+    if args.get('clean'):
+      data = TextClean().call(data)
 
     # print(datetime.datetime.utcnow(), 'processing nlp')
     # docs = self.nlp.pipe([data])

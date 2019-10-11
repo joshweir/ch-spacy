@@ -5,17 +5,15 @@
 
 import os
 from flask import Flask, request, Response
-from multiprocessing import Pool
-from parser import ChProcess
+from parser import ChProcess, TextClean
 import json
 import datetime
 
 app = Flask(__name__)
 port = 80 if os.getuid() == 0 else 8000
 
-pool = Pool(1, maxtasksperchild=50)
-
 parse = ChProcess('en_core_web_sm')
+text_cleaner = TextClean()
 
 
 @app.route('/', methods=['POST', 'GET'])
@@ -32,6 +30,21 @@ def index():
 
   return Response(
       status=200, response=json.dumps(result), content_type="application/json")
+
+
+@app.route('/text-clean', methods=['POST', 'GET'])
+def text_clean():
+  data = request.data.decode('utf-8')
+  if not data:
+    return Response(status=500, response="no data")
+
+  print("got something to clean: '%s'" % data)
+  print(datetime.datetime.utcnow())
+
+  result = text_cleaner.call(data) + '\n'
+  print(datetime.datetime.utcnow(), 'fin')
+
+  return Response(status=200, response=result)
 
 
 if __name__ == '__main__':
