@@ -2,7 +2,7 @@
 import datetime
 import json
 import logging
-logging.basicConfig(level=logging.INFO)
+# logging.basicConfig(level=logging.INFO)
 import neuralcoref
 import spacy
 # from nlp_architect.models.bist_parser import BISTModel
@@ -10,6 +10,7 @@ from nlpre import titlecaps, dedash, identify_parenthetical_phrases
 from nlpre import replace_acronyms, replace_from_dictionary
 from nlpre import separated_parenthesis, unidecoder, token_replacement
 from nlpre import url_replacement, separate_reference
+import re
 
 
 class TextClean(object):
@@ -40,18 +41,23 @@ class ChProcess(object):
   def __init__(self, model_name):
     self.nlp = spacy.load(model_name)
     neuralcoref.add_to_pipe(self.nlp)
+    self.textclean = TextClean()
 
   def to_json(self, data, args):
     collapse_punctuation = False
     collapse_phrases = False
     output = []
 
+    paragraphs = list(
+        filter(lambda x: x and len(x.strip()) > 0, re.split(r'\n[\s]*\n',
+                                                            data)))
+    # print(list(paragraphs))
     if args.get('clean'):
-      data = TextClean().call(data)
+      paragraphs = list(map(lambda x: self.textclean.call(x), paragraphs))
 
     # print(datetime.datetime.utcnow(), 'processing nlp')
-    # docs = self.nlp.pipe([data])
-    docs = [self.nlp(data)]
+    docs = self.nlp.pipe(paragraphs)
+    # docs = [self.nlp(data)]
     # print(datetime.datetime.utcnow(), 'done processing nlp')
     for doc in docs:
       if collapse_punctuation:
@@ -105,15 +111,6 @@ class ChProcess(object):
       for s in list(doc.sents):
         sentences.append({'start': s.start, 'end': s.end})
 
-      noun_chunks = []
-      for chunk in doc.noun_chunks:
-        noun_chunks.append({
-            'text': chunk.text,
-            'roottext': chunk.root.text,
-            'dep': chunk.root.dep_,
-            'headtext': chunk.root.head.text
-        })
-
       doutput = {}
       doutput['text'] = doc.text
       doutput['sents'] = sentences
@@ -121,7 +118,18 @@ class ChProcess(object):
       doutput['mentions'] = mentions
       doutput['clusters'] = clusters
       doutput['resolved'] = resolved
-      doutput['noun_chunks'] = noun_chunks
+
+      if args.get('nounchunks'):
+        noun_chunks = []
+        for chunk in doc.noun_chunks:
+          noun_chunks.append({
+              'text': chunk.text,
+              'roottext': chunk.root.text,
+              'dep': chunk.root.dep_,
+              'headtext': chunk.root.head.text
+          })
+        doutput['noun_chunks'] = noun_chunks
+
       output.append(doutput)
 
     return output
