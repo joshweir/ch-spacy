@@ -24,8 +24,8 @@ class TextClean(object):
         unidecoder(),
         token_replacement(),
         url_replacement(),
-        replace_acronyms(ABBR, underscore=False),
-        separated_parenthesis(),
+        # replace_acronyms(ABBR, underscore=False),
+        # separated_parenthesis(),
         # replace_from_dictionary(prefix="MeSH_")
     ]
 
@@ -40,7 +40,7 @@ class ChProcess(object):
 
   def __init__(self, model_name):
     self.nlp = spacy.load(model_name)
-    neuralcoref.add_to_pipe(self.nlp)
+    neuralcoref.add_to_pipe(self.nlp, greedyness=0.45)
     self.textclean = TextClean()
 
   def to_json(self, data, args):

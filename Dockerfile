@@ -12,7 +12,9 @@ RUN apt-get update && apt-get install -y \
 
 RUN pip install spacy==2.1.0
 
-RUN python -m spacy download en_core_web_sm
+# RUN python -m spacy download en_core_web_sm
+RUN python -m spacy download en_core_web_md
+RUN python -m spacy link en_core_web_md en
 
 RUN pip install neuralcoref
 
@@ -29,6 +31,18 @@ RUN pip install -r requirements.txt
 
 # ENV NLP_ARCHITECT_BE=CPU
 # RUN pip install nlp-architect
+
+# numpy==1.16.3
+RUN pip install torch==1.0.1
+RUN pip install transformers==2.0.0
+RUN pip install Cython==0.29.10
+RUN pip install tqdm==4.32.2
+# neuralcoref==4.0
+RUN pip install argparse
+RUN pip install scikit-learn
+RUN pip install bert-extractive-summarizer==0.2.0
+RUN pip install beautifulsoup4
+RUN pip install lxml
 
 ADD ./ /app
 
