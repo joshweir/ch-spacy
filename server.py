@@ -15,7 +15,7 @@ from bs4 import BeautifulSoup
 app = Flask(__name__)
 port = 80 if os.getuid() == 0 else 8000
 
-parse = ChProcess('en_core_web_md')
+parse = ChProcess('en_core_web_sm')
 text_cleaner = TextClean()
 # default model: bert-large-uncased
 summrizer = Summarizer(model='distilbert-base-uncased', greedyness=0.45)
@@ -60,15 +60,15 @@ def summarize():
   print("got something to summarize: '%s'" % data)
   print(datetime.datetime.utcnow())
 
-  has_markup = re.match(r'<[^>]*>', data)
+  has_markup = re.match(r'<[^>]*>', data) or re.match(r'&[A-Za-z]+;', data)
   if has_markup:
     data = BeautifulSoup(data, 'lxml').get_text()
     print("has markup, transformed: %s" % data)
 
-  result = summrizer(data)
+  result = summrizer(data, result_format='array', num_sentences=3)
   print(datetime.datetime.utcnow(), 'fin')
 
-  return Response(status=200, response=result)
+  return Response(status=200, response=result, content_type="application/json")
 
 
 if __name__ == '__main__':

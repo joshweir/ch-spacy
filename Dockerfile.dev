@@ -52,6 +52,7 @@ RUN git clone https://github.com/joshweir/bert-extractive-summarizer
 # RUN python -m venv .env
 # RUN . .env/bin/activate
 WORKDIR /bert-extractive-summarizer
+# RUN git fetch origin more-options && git checkout more-options
 RUN pip install -r requirements.txt
 RUN python setup.py build_ext --inplace
 RUN python setup.py install
@@ -69,14 +70,14 @@ RUN wget -O pytorch_model.bin https://s3.amazonaws.com/models.huggingface.co/ber
 RUN wget -O config.json https://s3.amazonaws.com/models.huggingface.co/bert/distilbert-base-uncased-config.json
 RUN wget -O vocab.bin https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-uncased-vocab.txt
 
-
 ADD ./ /app
 
 WORKDIR /app
 
-CMD gunicorn --bind 0.0.0.0:80 \
-  --worker-tmp-dir /dev/shm \
-  --workers=2 --threads=4 --worker-class=gthread \
-  --log-file=- \
-  --preload \
-  wsgi:app
+# CMD gunicorn --bind 0.0.0.0:80 \
+#   --worker-tmp-dir /dev/shm \
+#   --workers=1 --threads=4 --worker-class=gthread \
+#   --log-file=- \
+#   --preload \
+#   wsgi:app
+CMD python server.py
