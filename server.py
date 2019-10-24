@@ -23,14 +23,15 @@ summrizer = Summarizer(model='distilbert-base-uncased', greedyness=0.45)
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
+  start = datetime.datetime.utcnow()
   data = request.data.decode('utf-8')
   if not data:
     return Response(status=500, response="no data")
 
-  print("got something: '%s'" % data)
-  print(datetime.datetime.utcnow())
+  # print("got something: '%s'" % data)
   result = parse.to_json(data, request.args)
-  print(datetime.datetime.utcnow(), 'fin')
+  fin = datetime.datetime.utcnow()
+  print(fin - start, 'req time')
 
   return Response(
       status=200, response=json.dumps(result), content_type="application/json")
@@ -42,7 +43,7 @@ def text_clean():
   if not data:
     return Response(status=500, response="no data")
 
-  print("got something to clean: '%s'" % data)
+  # print("got something to clean: '%s'" % data)
   print(datetime.datetime.utcnow())
 
   result = text_cleaner.call(data) + '\n'
@@ -53,20 +54,20 @@ def text_clean():
 
 @app.route('/summarize', methods=['POST', 'GET'])
 def summarize():
+  start = datetime.datetime.utcnow()
   data = request.data.decode('utf-8')
   if not data:
     return Response(status=500, response="no data")
 
-  print("got something to summarize: '%s'" % data)
-  print(datetime.datetime.utcnow())
+  # print("got something to summarize: '%s'" % data)
 
-  has_markup = re.match(r'<[^>]*>', data) or re.match(r'&[A-Za-z]+;', data)
+  has_markup = re.search(r'<[^>]*>', data) or re.search(r'&[A-Za-z]+;', data)
   if has_markup:
     data = BeautifulSoup(data, 'lxml').get_text()
-    print("has markup, transformed: %s" % data)
 
   result = summrizer(data, result_format='array', num_sentences=3)
-  print(datetime.datetime.utcnow(), 'fin')
+  fin = datetime.datetime.utcnow()
+  print(fin - start, 'req time')
 
   return Response(status=200, response=result, content_type="application/json")
 
