@@ -46,16 +46,6 @@ RUN pip install scikit-learn
 RUN pip install beautifulsoup4
 RUN pip install lxml
 
-# RUN pip install bert-extractive-summarizer==0.2.0
-ARG CACHEBUST=1
-RUN git clone https://github.com/joshweir/bert-extractive-summarizer
-# RUN python -m venv .env
-# RUN . .env/bin/activate
-WORKDIR /bert-extractive-summarizer
-RUN pip install -r requirements.txt
-RUN python setup.py build_ext --inplace
-RUN python setup.py install
-
 RUN mkdir /bert-model
 WORKDIR /bert-model
 # https://github.com/huggingface/transformers/issues/451
@@ -67,8 +57,18 @@ WORKDIR /bert-model
 
 RUN wget -O pytorch_model.bin https://s3.amazonaws.com/models.huggingface.co/bert/distilbert-base-uncased-pytorch_model.bin
 RUN wget -O config.json https://s3.amazonaws.com/models.huggingface.co/bert/distilbert-base-uncased-config.json
-RUN wget -O vocab.bin https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-uncased-vocab.txt
+RUN wget -O vocab.txt https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-uncased-vocab.txt
 
+# RUN pip install bert-extractive-summarizer==0.2.0
+ARG CACHEBUST=1
+WORKDIR /
+RUN git clone https://github.com/joshweir/bert-extractive-summarizer
+# RUN python -m venv .env
+# RUN . .env/bin/activate
+WORKDIR /bert-extractive-summarizer
+RUN pip install -r requirements.txt
+RUN python setup.py build_ext --inplace
+RUN python setup.py install
 
 ADD ./ /app
 

@@ -1,8 +1,8 @@
-docker build -t joshweir/ch-spacy-server --build-arg CACHEBUST=$(date +%s) .
-docker push -t joshweir/ch-spacy-server
+docker build -t joshweir/ch-spacy-server:latest .
+docker push joshweir/ch-spacy-server:latest
 
 docker build -t joshweir/ch-spacy-server:dev --build-arg CACHEBUST=$(date +%s) -f Dockerfile.dev .
-docker push -t joshweir/ch-spacy-server:dev
+docker push joshweir/ch-spacy-server:dev
 
 # run server: 
 # docker run -it --rm -p "127.0.0.1:8080:80" joshweir/ch-spacy-server
