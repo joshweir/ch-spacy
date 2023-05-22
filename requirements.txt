@@ -1,7 +1,7 @@
 # spacy==2.1.0
 falcon==2.0.0
 pytest
-requests==2.21.0
+requests==2.31.0
 # neuralcoref
 flask
 futures
